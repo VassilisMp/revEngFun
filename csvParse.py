@@ -10,5 +10,9 @@ data_step_5 = []
 for i in range(0, len(dataList)-1, 5):
     data_step_5.append(dataList[i])
 # dataList = list(data.T.to_dict().values())
+date_temp = data_time_only[['date_col', 'Temperature']]
+date_temp = list(date_temp.T.to_dict().values())
+date_temp_no_duplicates = [i for n, i in enumerate(date_temp) if i not in date_temp[n + 1:]]
+date_temp_no_duplicates = pd.DataFrame(date_temp_no_duplicates)
 
 # df1 = df[['a','b']]
