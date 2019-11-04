@@ -13,14 +13,23 @@
         <property name="text" translatable="yes">START</property>
         <layout>
           <property name="column">0</property>
+          <property name="ipadx">1</property>
+          <property name="ipady">1</property>
+          <property name="padx">1</property>
+          <property name="pady">1</property>
           <property name="propagate">True</property>
           <property name="row">0</property>
         </layout>
       </object>
     </child>
     <child>
-      <object class="ttk.Entry" id="START_Entry">
-        <property name="text" translatable="yes">13:30</property>
+      <object class="ttk.Entry" id="start_Entry">
+        <property name="font">TkTextFont</property>
+        <property name="justify">center</property>
+        <property name="textvariable">string:time_var</property>
+        <property name="validate">key</property>
+        <property name="validatecommand">validate_time</property>
+        <property name="width">5</property>
         <layout>
           <property name="column">0</property>
           <property name="propagate">True</property>
@@ -29,21 +38,17 @@
       </object>
     </child>
     <child>
-      <object class="ttk.Label" id="time_Label">
-        <property name="text" translatable="yes">output</property>
+      <object class="ttk.Button" id="submit_Button">
+        <property name="command">submit</property>
+        <property name="style">MyEntryStyle.TEntry</property>
+        <property name="takefocus">true</property>
+        <property name="text" translatable="yes">submit</property>
         <layout>
           <property name="column">0</property>
-          <property name="propagate">True</property>
-          <property name="row">2</property>
-        </layout>
-      </object>
-    </child>
-    <child>
-      <object class="ttk.Button" id="get_start_Button">
-        <property name="command">get_START</property>
-        <property name="text" translatable="yes">get_start</property>
-        <layout>
-          <property name="column">0</property>
+          <property name="ipadx">5</property>
+          <property name="ipady">5</property>
+          <property name="padx">5</property>
+          <property name="pady">5</property>
           <property name="propagate">True</property>
           <property name="row">3</property>
         </layout>
