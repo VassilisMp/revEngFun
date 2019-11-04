@@ -1,11 +1,11 @@
 import pandas as pd
-from scipy.interpolate import lagrange
+import scipy.interpolate as interpolate
 import numpy as np
 import matplotlib.pyplot as plt
 
 
 def plotPol(poly, x, y):
-    xnew = np.arange(x.min()-2, x.max()+2, 0.5)
+    xnew = np.arange(x.min()-10, x.max()+10, 0.5)
     ynew = poly(xnew)
     plt.plot(x, y, 'o', xnew, ynew, '-')
     plt.show()
@@ -50,9 +50,11 @@ y = np.array(pressure_col)
 print('pressure min value: ', y.min())
 print('pressure max value: ', y.max())
 
-poly = lagrange(x[::6], y[::6])
-print(poly)
+poly = interpolate.PchipInterpolator(x, y)
 plotPol(poly, x, y)
+print(poly)
+
+# BarycentricInterpolator(x, y)
 
 # temp = date_temp_no_duplicates[0]['Temperature']
 # newarray = [date_temp_no_duplicates[0]]
