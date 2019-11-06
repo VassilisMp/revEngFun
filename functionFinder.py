@@ -1,3 +1,4 @@
+# https://thispointer.com/select-rows-columns-by-name-or-index-in-dataframe-using-loc-iloc-python-pandas/
 import pandas as pd
 import scipy.interpolate as interpolate
 import numpy as np
@@ -5,7 +6,7 @@ import matplotlib.pyplot as plt
 
 
 def plotPol(poly, x, y):
-    xnew = np.arange(x.min()-10, x.max()+10, 0.5)
+    xnew = np.arange(x.min() - 10, x.max() + 10, 0.5)
     ynew = poly(xnew)
     plt.plot(x, y, 'o', xnew, ynew, '-')
     plt.show()
@@ -54,6 +55,7 @@ poly = interpolate.PchipInterpolator(x, y)
 plotPol(poly, x, y)
 print(poly)
 
+
 # BarycentricInterpolator(x, y)
 
 # temp = date_temp_no_duplicates[0]['Temperature']
@@ -78,3 +80,18 @@ print(poly)
 
 # date_col = newarray2['date_col'].to_list()
 # Temperature = newarray2['Temperature'].to_list()
+def apply(x):
+    x = x.strip()
+    if x == 'ON':
+        return 100
+    elif x == 'OFF':
+        return 0
+
+
+data = pd.read_csv("new_data1.csv", parse_dates={'datetime': ["Date", "Time"]})
+x1 = data['datetime'][0].timestamp()
+data['datetime'] = data['datetime'].map(lambda d: int(d.timestamp() - x1))
+data['Active Countdown'] = data['Active Countdown'].map(lambda d: d * 100)
+for i in range(6, 12):
+    data.iloc[:, i] = data.iloc[:, i].map(apply)
+data = data.drop(columns=['Cycle Number', 'Active Countdown', 'Vessel Valve', 'Overload Alarm', 'System Alarm'])

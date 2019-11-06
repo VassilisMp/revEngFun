@@ -4,7 +4,7 @@
 import datetime
 import re
 from typing import Match
-import engine
+from engine import Engine
 
 import PySimpleGUIQt as sg
 
@@ -31,20 +31,40 @@ def check_input(match: Match, element: str):
         window[element].BackgroundColor = bgColor_default
 
 
+def check_input_len(name, length):
+    flag = True
+    if len(values[name]) > length:
+        window[name].Update(globals()[name + 'prev'])
+        flag = False
+    globals()[name + 'prev'] = values[name]
+    return flag
+
+
+_start_prev = '00:00'
+_stop_prev = '00:00'
+_date_prev = '01/01/2019'
+_cycle_id_prev = '1'
 while True:
     event, values = window.Read(timeout=10)
-    # window['_cycle_id_'].Update(background_color='#FF3333')
     # input check
     if event is '_start_':
+        if not check_input_len(event, 5):
+            continue
         match = time_regex.match(values['_start_'])
         check_input(match, '_start_')
     if event is '_stop_':
+        if not check_input_len(event, 5):
+            continue
         match = time_regex.match(values['_stop_'])
         check_input(match, '_stop_')
     if event is '_date_':
+        if not check_input_len(event, 10):
+            continue
         match = date_regex.match(values['_date_'])
         check_input(match, '_date_')
     if event is '_cycle_id_':
+        if not check_input_len(event, 5):
+            continue
         match = int_regex.match(values['_cycle_id_'])
         check_input(match, '_cycle_id_')
     # on submit click
@@ -61,12 +81,15 @@ while True:
         if len(error) > 0:
             sg.PopupAutoClose(error)
         else:
-            start: datetime.time = datetime.datetime.strptime(values['_start_'], "%H:%M").time()
-            stop: datetime.time = datetime.datetime.strptime(values['_stop_'], "%H:%M").time()
-            date: datetime.date = datetime.datetime.strptime(values['_date_'], "%d/%m/%Y").date()
-            cycle_id: int = int(values['_cycle_id_'])
-            myEngine: engine.Engine = engine.Engine(start, stop, cycle_id, date)
-            print(myEngine)
+            start: datetime.datetime = datetime.datetime.strptime(values['_date_'] + values['_start_'], "%d/%m/%Y%H:%M")
+            stop: datetime.datetime = datetime.datetime.strptime(values['_date_'] + values['_stop_'], "%d/%m/%Y%H:%M")
+            if (stop - start).total_seconds() // 60 <= 0:
+                sg.PopupAutoClose('stop must be bigger than start')
+            else:
+                cycle_id: int = int(values['_cycle_id_'])
+                myEngine: Engine = Engine(start, stop, cycle_id)
+                sg.PopupAutoClose(myEngine)
+                print(myEngine)
 
     if event in ('Exit', 'Window closed using X'):
         break

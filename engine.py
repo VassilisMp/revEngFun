@@ -1,76 +1,25 @@
-import re
-import tkinter as tk
-from tkinter import ttk
-from tkinter.ttk import Style
-from typing import Match
-
-import pygubu
 import datetime
 
 
 class Engine:
-    def __init__(self, start: datetime.time, stop: datetime.time, cycle_id: int, date: datetime.date):
+    def __init__(self, start: datetime.datetime, stop: datetime.datetime, cycle_id: int):
         self.start = start
         self.stop = stop
         self.cycle_id = cycle_id
-        self.date = date
-        # self.stop = time_object = datetime.datetime.strptime(time_string, "%H:%M").time()
+        self.date: datetime.date = start.date()
+        self.total_duration: int = int((self.stop - self.start).total_seconds()) // 60
+        x1plusx2 = self.total_duration - 30 - 5
+        self.x1: int = int(x1plusx2 * 0.8)
+        self.x2: int = int(x1plusx2 * 0.2)
 
+    def y(self):
+        return (self.stop - self.start).total_seconds() // 60
 
-class Application:
-    def __init__(self, master):
-        self.master = master
-        # 1: Create a builder
-        self.builder = pygubu.Builder()
-        # 2: Load an ui file
-        self.builder.add_from_file('engine.ui')
-        # 3: Create the widget using a master as parent
-        self.mainwindow: tk.Tk = self.builder.get_object('mainwindow', master)
-        # connect callback functions
-        self.builder.connect_callbacks(self)
-        # set engine
-        self.engine: Engine = None
-        # button style
-        s: Style = ttk.Style()
-        s.configure('MyEntryStyle.TEntry', foreground="black", background="white", font="black")
-        # this.START_Entry = None
-
-    def submit(self):
-        start_entry: tk.Entry = self.builder.get_object('start_Entry')
-        submit_Button: tk.Button = self.builder.get_object('submit_Button')
-
-        # start_time_string = start_entry.getvar('time')
-
-    def validate_time(self):
-        print('\nvalidate')
-        time_var: tk.StringVar = self.builder.tkvariables['time_var']
-        match: Match = re.compile(r'\d\d:\d\d$').match(time_var.get())
-        print(time_var.get())
-        # print(match)
-        print(type(match))
-        valid = False
-        if match is not None:
-            print('match')
-            valid = True
-        else:
-            self.builder.get_object('start_Entry').config({"background": "Red"})
-            print('no match')
-            valid = False
-            # messagebox = tk.Tk()
-            # w = tk.Message(messagebox, text="this is a message")
-            # w.pack()
-        return valid
-        # start_time = datetime.datetime.strptime(start_time_string, "%H:%M").time()
-        # start_entry.setvar('time', )
-
-
-def _from_rgb(rgb):
-    """translates an rgb tuple of int to a tkinter friendly color code
-    """
-    return "#%02x%02x%02x" % rgb
-
-
-if __name__ == '__main__':
-    root = tk.Tk()
-    app = Application(root)
-    root.mainloop()
+    def __str__(self) -> str:
+        return 'start: {0}\nstop: {1}\ndate: {2}\ncycle id: {3}\ntotal duration: {4}\nx1: {5}\nx2: {6}'.format(self.start.time().__str__(),
+                                                                        self.stop.time().__str__(),
+                                                                        self.date.__str__(),
+                                                                        self.cycle_id,
+                                                                        self.total_duration,
+                                                                        self.x1,
+                                                                        self.x2)
