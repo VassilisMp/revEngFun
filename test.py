@@ -1,20 +1,14 @@
-import PySimpleGUIQt as sg
+import csv
 
-# layout the window
-layout = [[sg.Text('A custom progress meter')],
-          [sg.ProgressBar(10000, orientation='h', size=(20, 20), key='progressbar')],
-          [sg.Cancel()]]
+with open('VESSEL_9002_BATCH_4225.csv') as csv_file:
+    csv_reader = csv.reader(csv_file, delimiter=',')
+    line_count = 0
+    for row in csv_reader:
+        print(row)
+    print(f'Processed {line_count} lines.')
 
-# create the window`
-window = sg.Window('Custom Progress Meter', layout)
-progress_bar = window.FindElement('progressbar')
-# loop that would normally do something useful
-for i in range(10000):
-    # check to see if the cancel button was clicked and exit loop if clicked
-    event, values = window.Read(timeout=0)
-    if event == 'Cancel' or event is None:
-        break
-    # update bar with loop value +1 so that bar eventually reaches the maximum
-    progress_bar.UpdateBar(i + 1)
-# done with loop... need to destroy the window as it's still open
-window.Close()
+import fileinput
+
+with fileinput.FileInput('VESSEL_9002_BATCH_4225.csv', inplace=True, backup='.bak') as file:
+    for line in file:
+        print(line.replace('\t', ''), end='')
