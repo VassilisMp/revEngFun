@@ -1,4 +1,6 @@
 import csv
+import fileinput
+import os
 
 with open('VESSEL_9002_BATCH_4225.csv') as csv_file:
     csv_reader = csv.reader(csv_file, delimiter=',')
@@ -7,8 +9,21 @@ with open('VESSEL_9002_BATCH_4225.csv') as csv_file:
         print(row)
     print(f'Processed {line_count} lines.')
 
-import fileinput
+# List all files in a dataFolder using os.listdir
+cur_path = os.getcwd()
+basepath = cur_path + '/dataFolder/'
+files = []
+for entry in os.listdir(basepath):
+    if os.path.isfile(os.path.join(basepath, entry)):
+        files.append(entry)
 
-with fileinput.FileInput('VESSEL_9002_BATCH_4225.csv', inplace=True, backup='.bak') as file:
-    for line in file:
-        print(line.replace('\t', ''), end='')
+for fileName in files:
+    lines = []
+    with open(basepath + fileName, 'r') as file:
+        lines = file.readlines()
+    newFile = open(basepath+'edited/'+fileName, 'w')
+
+    with open(basepath+fileName, 'r') as file:
+        for line in file:
+            newFile.write(line.replace('\t', ''))
+    newFile.close()

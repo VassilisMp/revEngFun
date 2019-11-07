@@ -1,10 +1,10 @@
-Hydroclave Systems Corp. ,2019
-Sterilization Temperature Setpoint (C) ,121
-Sterilization Pressure Setpoint (kPa) ,130
-Sterilization Time Setpoint ,30
-Dry Cycle Time (minutes) ,5
-Batch Number ,4225
-Vessel Serial Number ,9002
+Hydroclave Systems Corp. ,	2019
+Sterilization Temperature Setpoint (C) ,	121
+Sterilization Pressure Setpoint (kPa) ,	130
+Sterilization Time Setpoint ,	30
+Dry Cycle Time (minutes) ,	5
+Batch Number ,	4225
+Vessel Serial Number ,	9002
 
 
 Date,Time,Cycle Number,Temperature,Pressure,Active Countdown,Countdown Step,Jacket Valve,Vessel Valve,Vent Valve,Sterilizing,Overload Alarm,System Alarm

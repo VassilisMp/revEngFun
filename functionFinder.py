@@ -92,14 +92,10 @@ data = pd.read_csv("new_data1.csv", parse_dates={'Datetime': ["Date", "Time"]})
 x1 = data['Datetime'][0].timestamp()
 data['Datetime'] = data['Datetime'].map(lambda d: int(d.timestamp() - x1))
 data['Active Countdown'] = data['Active Countdown'].map(lambda d: d * 100)
+data['Countdown Step'] = data['Countdown Step'].map(lambda d: d / 100)
 for i in range(6, 12):
     data.iloc[:, i] = data.iloc[:, i].map(apply)
 data = data.drop(columns=['Cycle Number', 'Active Countdown', 'Vessel Valve', 'Overload Alarm', 'System Alarm'])
 
-vars = []
-for i in range(0, len(data.T)):
-    vars.append(np.array(data.iloc[:, i].to_list()))
-
-for i in range(1, len(data.T)):
-    plt.plot(vars[0], vars[i], '-')
+data.plot(x='Datetime')
 plt.show()
