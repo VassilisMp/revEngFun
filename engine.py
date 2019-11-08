@@ -24,3 +24,11 @@ class Engine:
             self.total_duration,
             self.x1,
             self.x2)
+
+
+class MyEngine:
+
+    def __init__(self, info, data_frame, file_name) -> None:
+        self.info = info
+        self.data_frame = data_frame
+        self.file_name = file_name
