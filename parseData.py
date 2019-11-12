@@ -10,6 +10,54 @@ class Engine:
         self.info = info
         self.data_frame = data_frame
         self.file_name = file_name
+        self.duration = data_frame['Datetime'][data_frame.__len__() - 1] - data_frame['Datetime'][0]
+        self.data_frame['Countdown Step'] = self.data_frame['Countdown Step'] / 10
+
+        def apply(x):
+            if type(x) == str:
+                xstrip = x.strip()
+                if xstrip == 'ON':
+                    return 100
+                elif xstrip == 'OFF':
+                    return 0
+                else:
+                    return x
+            else:
+                return x
+
+        self.data_frame = self.data_frame.applymap(lambda x: apply(x))
+
+
+class Engines:
+
+    def __init__(self, engines) -> None:
+        super().__init__()
+        self.engines = engines
+        # remove constant columns
+        # 'Vessel Valve' is constant in some Data
+        # Engine 18 Data has cycle stops
+        for engine in engines:
+            engine.data_frame = engine.data_frame.drop(
+                columns=['Cycle Number', 'Active Countdown', 'Overload Alarm', 'System Alarm'])
+        # Temperature range
+        self.max_temp = max(map(lambda x: max(x.data_frame.Temperature), enginesClass.engines))
+        self.min_temp = min(map(lambda x: min(x.data_frame.Temperature), enginesClass.engines))
+        # Pressure range
+        self.max_pressure = max(map(lambda x: max(x.data_frame.Pressure), enginesClass.engines))
+        self.min_pressure = min(map(lambda x: min(x.data_frame.Pressure), enginesClass.engines))
+        # Countdown Step range
+        self.max_CountdownStep = max(map(lambda x: max(x.data_frame['Countdown Step']), enginesClass.engines))
+        self.min_CountdownStep = min(map(lambda x: min(x.data_frame['Countdown Step']), enginesClass.engines))
+        # duration range
+        self.max_duration = max(map(lambda x: x.duration, enginesClass.engines))
+        self.min_duration = min(map(lambda x: x.duration, enginesClass.engines))
+
+        # check which info fields are constant
+        var_info_names = []
+        for field in list(engines[0].info.keys()):
+            if not check_const_info(field):
+                var_info_names.append(field)
+        # info variable fields are 'Batch Number', 'Vessel Serial Number'
 
 
 def getConstColNames(data) -> list:
@@ -64,6 +112,8 @@ for entry in os.listdir(basepath):
 # get engines
 engines: list = []
 for fileName in files:
+    if fileName == 'VESSEL_9004_BATCH_1850.csv':
+        continue
     # read file lines
     with open(basepath + fileName, 'r') as file:
         lines = file.readlines()
@@ -94,18 +144,25 @@ os.remove('tmp')
 # find constant columns
 # check_const_data_cols()
 
-# remove constant columns
-# 'Vessel Valve' is constant in some Data
-# Engine 18 Data has cycle stops
-for engine in engines:
-    engine.data_frame = engine.data_frame.drop(columns=['Cycle Number', 'Active Countdown', 'Overload Alarm', 'System '
-                                                                                                              'Alarm'])
+enginesClass = Engines(engines)
 
-# check which info fields are constant
-var_info_names = []
-for field in list(engines[0].info.keys()):
-    if not check_const_info(field):
-        var_info_names.append(field)
-# info variable fields are 'Batch Number', 'Vessel Serial Number'
+# check running time
+step = enginesClass.engines[0].data_frame.T[0]['Countdown Step']
+start_date_i = None
+stop_date_i = None
+start_flag = True
+for index, row in enginesClass.engines[0].data_frame.iterrows():
+    if row['Countdown Step'] < step and start_flag:
+        start_date_i = index
+        start_flag = False
+    elif row['Countdown Step'] == 0:
+        stop_date_i = index
+        break
+active_delta = enginesClass.engines[0].data_frame.T[stop_date_i].Datetime - enginesClass.engines[0].data_frame.T[start_date_i-1].Datetime
+enginesClass.engines[1].data_frame.plot(x='Datetime')
+plt.show()
 
-
+# https://datascience.stackexchange.com/questions/5427/how-to-generate-synthetic-dataset-using-machine-learning-model-learnt-with-origi
+# https://en.wikipedia.org/wiki/Anscombe%27s_quartet
+# https://en.wikipedia.org/wiki/Nonparametric_statistics
+# https://www.encyclopediaofmath.org/index.php/Multi-dimensional_statistical_analysis
