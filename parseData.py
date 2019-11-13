@@ -2,6 +2,8 @@ import csv
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
+from pandas import RangeIndex
 
 
 class Engine:
@@ -11,7 +13,8 @@ class Engine:
         self.data_frame = data_frame
         self.file_name = file_name
         self.duration = data_frame['Datetime'][data_frame.__len__() - 1] - data_frame['Datetime'][0]
-        self.data_frame['Countdown Step'] = self.data_frame['Countdown Step'] / 10
+
+        # self.data_frame['Countdown Step'] = self.data_frame['Countdown Step'] / 10
 
         def apply(x):
             if type(x) == str:
@@ -36,21 +39,21 @@ class Engines:
         # remove constant columns
         # 'Vessel Valve' is constant in some Data
         # Engine 18 Data has cycle stops
-        for engine in engines:
+        for engine in self.engines:
             engine.data_frame = engine.data_frame.drop(
                 columns=['Cycle Number', 'Active Countdown', 'Overload Alarm', 'System Alarm'])
         # Temperature range
-        self.max_temp = max(map(lambda x: max(x.data_frame.Temperature), enginesClass.engines))
-        self.min_temp = min(map(lambda x: min(x.data_frame.Temperature), enginesClass.engines))
+        self.max_temp = max(map(lambda x: max(x.data_frame.Temperature), self.engines))
+        self.min_temp = min(map(lambda x: min(x.data_frame.Temperature), self.engines))
         # Pressure range
-        self.max_pressure = max(map(lambda x: max(x.data_frame.Pressure), enginesClass.engines))
-        self.min_pressure = min(map(lambda x: min(x.data_frame.Pressure), enginesClass.engines))
+        self.max_pressure = max(map(lambda x: max(x.data_frame.Pressure), self.engines))
+        self.min_pressure = min(map(lambda x: min(x.data_frame.Pressure), self.engines))
         # Countdown Step range
-        self.max_CountdownStep = max(map(lambda x: max(x.data_frame['Countdown Step']), enginesClass.engines))
-        self.min_CountdownStep = min(map(lambda x: min(x.data_frame['Countdown Step']), enginesClass.engines))
+        self.max_CountdownStep = max(map(lambda x: max(x.data_frame['Countdown Step']), self.engines))
+        self.min_CountdownStep = min(map(lambda x: min(x.data_frame['Countdown Step']), self.engines))
         # duration range
-        self.max_duration = max(map(lambda x: x.duration, enginesClass.engines))
-        self.min_duration = min(map(lambda x: x.duration, enginesClass.engines))
+        self.max_duration = max(map(lambda x: x.duration, self.engines))
+        self.min_duration = min(map(lambda x: x.duration, self.engines))
 
         # check which info fields are constant
         var_info_names = []
@@ -158,9 +161,32 @@ for index, row in enginesClass.engines[0].data_frame.iterrows():
     elif row['Countdown Step'] == 0:
         stop_date_i = index
         break
-active_delta = enginesClass.engines[0].data_frame.T[stop_date_i].Datetime - enginesClass.engines[0].data_frame.T[start_date_i-1].Datetime
-enginesClass.engines[1].data_frame.plot(x='Datetime')
-plt.show()
+
+# active area
+active = enginesClass.engines[0].data_frame[start_date_i-1:stop_date_i+1].loc[:,
+         ['Datetime', 'Pressure', 'Countdown Step']]
+active = active.reset_index(drop=True)
+# start
+delta = active.T[1].Datetime-active.T[0].Datetime
+active['Countdown Step'][0] = active.T[1]['Countdown Step']+delta.total_seconds()
+# stop
+delta = active.T[active.__len__()-1].Datetime-active.T[active.__len__()-2].Datetime
+active['Countdown Step'][active.__len__()-1] = active.T[active.__len__()-2]['Countdown Step']-delta.total_seconds()
+
+# make dataframe with 1 second step
+df = pd.DataFrame({'Countdown Step': reversed(range(0, 1801, 1))})
+merged = pd.merge(active, df, right_on='Countdown Step', left_on='Countdown Step', how='right')
+merged = merged.sort_values(by=['Countdown Step'], ascending=False)
+# interpolate nulls
+merged = merged.interpolate(method='linear')
+# reset index from zero
+merged = merged.reset_index(drop=True)
+
+# active.T[0].Datetime-pd.Timedelta(seconds=1800-1739)
+
+# enginesClass.engines[1].data_frame.plot(x='Datetime')
+# plt.show()
+
 
 # https://datascience.stackexchange.com/questions/5427/how-to-generate-synthetic-dataset-using-machine-learning-model-learnt-with-origi
 # https://en.wikipedia.org/wiki/Anscombe%27s_quartet
