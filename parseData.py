@@ -9,10 +9,26 @@ from pandas import RangeIndex
 class Engine:
 
     def __init__(self, info, data_frame, file_name) -> None:
+        # contains data in this form
+        # {
+        #     'Hydroclave Systems Corp.': 2019,
+        #     'Sterilization Temperature Setpoint (C)': 121,
+        #     'Sterilization Pressure Setpoint (kPa)': 130,
+        #     'Sterilization Time Setpoint': 30,
+        #     'Dry Cycle Time (minutes)': 5,
+        #     'Batch Number': x,
+        #     'Vessel Serial Number': x
+        # }
+        # only the next two variate
+        # 'Batch Number': x,
+        # 'Vessel Serial Number': x
         self.info: dict = info
+        # data read from csv
         self.data_frame: pd.DataFrame = data_frame
+        # csv file name
         self.file_name: str = file_name
         from pandas._libs.tslibs.timedeltas import Timedelta
+        # duration of data recording
         self.duration: Timedelta = data_frame['Datetime'][data_frame.__len__() - 1] - data_frame['Datetime'][0]
 
         # self.data_frame['Countdown Step'] = self.data_frame['Countdown Step'] / 10
@@ -30,12 +46,19 @@ class Engine:
             else:
                 return x
 
+        # convert ON/OFF values to 100/0, so they can be plotted
         self.data_frame = self.data_frame.applymap(lambda x: apply(x))
+        # Sterilization time data
         self.active_data = None
 
 
 class Engines:
-    # a = np.full((18,), 2)
+    # coefs = np.random.dirichlet(np.ones(enginesClass.array.shape[0]), size=1)[0]
+    # result = np.array([np.dot(enginesClass.array[:, i], coefs) for i in range(0, enginesClass.array.shape[1])])
+    # pd.DataFrame(result).plot()
+    # plt.show()
+    # np.savetxt('array.txt', enginesClass.array, fmt='%f')
+    # b = np.loadtxt('array.txt', dtype=np.float64)
     def __init__(self, engines) -> None:
         super().__init__()
         self.engines = engines
@@ -47,10 +70,10 @@ class Engines:
             self.engines[i].data_frame = self.engines[i].data_frame.drop(
                 columns=['Cycle Number', 'Active Countdown', 'Overload Alarm', 'System Alarm'])
             self.engines[i].active_data = self.get_active_area_data(self.engines[i]).reset_index(drop=True)
-            # engine.data_frame['Countdown Step'] = engine.data_frame['Countdown Step'] / 10
-        self.array = np.array([self.engines[0].active_data[::60].Pressure.to_list()])
+            self.engines[i].data_frame['Countdown Step'] = self.engines[i].data_frame['Countdown Step'] / 10
+        self.array = np.array([self.engines[0].active_data.Pressure.to_list()])
         for i in range(1, len(self.engines)):
-            l = np.array([self.engines[i].active_data[::60].Pressure.to_list()])
+            l = np.array([self.engines[i].active_data.Pressure.to_list()])
             # a = np.array([self.engines[1].active_data[::60].Pressure.to_list()])
             self.array = np.append(self.array, l, axis=0)
         # Temperature range
@@ -197,6 +220,10 @@ enginesClass = Engines(engines)
 
 # for engine in enginesClass.engines:
 #     engine.active_data.reset_index().plot(x='index', y='Pressure')
+#     plt.show()
+
+# for engine in enginesClass.engines:
+#     engine.data_frame.reset_index().plot(x='Datetime')
 #     plt.show()
 
 
